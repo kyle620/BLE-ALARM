@@ -1,6 +1,6 @@
 {
     "name": "CC2650 TI-MCU Development",
-    "image": "k620/cc2650_build:1.3",
+    "image": "k620/cc2650_build:1.4",
     "mounts": [
         "source=${localWorkspaceFolder},target=/workspace,type=bind"
     ],

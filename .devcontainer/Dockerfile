@@ -4,12 +4,13 @@ FROM ubuntu:latest
 # Note: libc6-i386 is included to ensure compatibility with 32-bit applications,  TI-RTOS installer is a 32-bit application
 RUN apt-get update -qq && \
     apt-get install -y --no-install-recommends \
-    ca-certificates \
-    wget \
-    git \
-    cmake \
-    libc6-i386 \
     bash \
+    ca-certificates \
+    cmake \
+    gcc-arm-none-eabi \
+    git \
+    libc6-i386 \
+    wget \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
