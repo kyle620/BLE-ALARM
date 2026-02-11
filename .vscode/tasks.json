@@ -19,5 +19,14 @@
                 "isDefault": true
             }
         },
+        {
+            "label": "CMake: clean",
+            "type": "shell",
+            "command": "find build -mindepth 2 -maxdepth 2 -exec rm -rf {} \\;" ,
+            "group": {
+                "kind": "build", // Ctrl+Shift+B will trigger this task
+                "isDefault": true
+            }
+        },
     ]   
 }
