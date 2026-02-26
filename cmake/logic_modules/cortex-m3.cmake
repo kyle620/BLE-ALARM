@@ -12,8 +12,3 @@ target_compile_options(cortex_m3_opts INTERFACE
     -mv7M3 
     --float_support=vfplib
 )
-
-target_link_options(cortex_m3_opts INTERFACE 
-    -mv7M3 
-    --float_support=vfplib
-)

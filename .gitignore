@@ -38,3 +38,6 @@
 
 /* CMake generated files */
 build/
+
+/* TIRTOS generated files */
+app/config_tirtos

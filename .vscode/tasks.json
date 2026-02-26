@@ -28,5 +28,23 @@
                 "isDefault": true
             }
         },
+        {
+                        "label": "CMake: clean cache",
+            "type": "shell",
+            "command": "rm -rf build/hello-config-debug",
+            "group": {
+                "kind": "build", // Ctrl+Shift+B will trigger this task
+                "isDefault": true
+            }
+        },
+        {
+            "label": "CMake: rebuild (clean + configure + build)",
+            "type": "shell",
+            "command": "rm -rf build/hello-config-debug && cmake --preset hello-config-debug && cmake --build build/hello-config-debug -- -j",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        }
     ]   
 }
