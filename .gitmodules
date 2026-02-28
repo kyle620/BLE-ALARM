@@ -1,0 +1,3 @@
+[submodule "simplelink-ble_sdk_2_02_08_12"]
+	path = simplelink-ble_sdk_2_02_08_12
+	url = https://github.com/kyle620/simplelink-ble_sdk_2_02_08_12
