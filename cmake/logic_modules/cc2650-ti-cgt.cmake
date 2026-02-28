@@ -18,9 +18,6 @@ target_compile_options(cc2650_config INTERFACE
     >
 )
 
-# target_compile_options(cc2650_config INTERFACE "--verbose")
-target_compile_options(cc2650_config INTERFACE)
-
 # 2. Preprocessor Definitions
 target_compile_definitions(cc2650_config INTERFACE CCS)
 
@@ -28,6 +25,7 @@ target_compile_definitions(cc2650_config INTERFACE CCS)
 target_link_options(cc2650_config INTERFACE 
     --warn_sections
     --diag_wrap=on
-    --diag_warning=255
+    --diag_warning=225
     --display_error_number
+    --rom_model
 )
