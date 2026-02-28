@@ -8,14 +8,9 @@ message(STATUS "XDC Root:    ${XDC_ROOT}")
 message(STATUS "TIRTOS Root: ${TIRTOS_ROOT}")
 message(STATUS "-------------------------")
 
-# Include the shared file for Cortex-M3 settings
-include("cmake/logic_modules/cortex-m3.cmake")
+add_subdirectory(simplelink-ble_sdk_2_02_08_12)
 
-# Inlclude the shared file for CC2650-specific settings
-include("cmake/logic_modules/cc2650-ti-cgt.cmake")
-
-# Include the function for handling TIRTOS configuration
-include("cmake/external_libraries/TIRTOS-Config.cmake")
+include(simplelink-ble_sdk_2_02_08_12/cmake/external_libraries/TIRTOS-Config.cmake)
 
 add_executable(${PROJECT_NAME})
 
@@ -32,7 +27,8 @@ FILES
 app/hdr/Board.h
 app/hdr/CC2650_LAUNCHXL.h
 )
-target_compile_definitions(${PROJECT_NAME} PRIVATE HOSTwrite=_nop)
+
+target_link_libraries(${PROJECT_NAME} PRIVATE ble_sdk_2_02_08_12)
 
 target_include_directories(${PROJECT_NAME} PRIVATE 
     "${TI_CGT_ROOT}/include"
