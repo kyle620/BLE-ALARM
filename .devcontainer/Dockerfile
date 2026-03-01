@@ -9,6 +9,7 @@ RUN apt-get update -qq && \
     cmake \
     git \
     libc6-i386 \
+    ninja-build \
     wget \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
