@@ -4,13 +4,13 @@
         {
             "name": "hello-config-base",
             "displayName": "Base Configuration",
-            "hidden": true,
             "binaryDir": "${sourceDir}/build/${presetName}",
-            "toolchainFile": "${sourceDir}/cmake/toolchains/ti-cgt-toolchain.cmake",
+            "toolchainFile": "${sourceDir}/simplelink-ble_sdk_2_02_08_12/cmake/toolchains/ti-cgt-toolchain.cmake",
             "cacheVariables": {
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
                 "CMAKE_RUNTIME_OUTPUT_DIRECTORY": "bin"
-            }
+            },
+            "generator": "Ninja"
         },
         {
             "name": "hello-config-debug",
@@ -19,6 +19,21 @@
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug"
             }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "hello-build-base",
+            "displayName": "Base Build",
+            "hidden": true,
+            "configurePreset": "hello-config-base",
+            "jobs": 4
+        },
+        {
+            "name": "hello-build-debug",
+            "displayName": "Debug Build (Cortex-M3)",
+            "inherits": "hello-build-base",
+            "configurePreset": "hello-config-debug"
         }
     ]
 }
