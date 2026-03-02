@@ -54,3 +54,9 @@ set(CMAKE_FIND_ROOT_PATH        "${TI_CGT_ROOT}")
 set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)   # find_program uses host paths
 set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)    # libraries must come from sysroot
 set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)    # headers must come from sysroot
+
+# ─── Compiler Identity Defines ───────────────────────────────────────────────
+# __TI_COMPILER_VERSION__ is normally predefined by armcl automatically,
+# but CMake's compiler abstraction layer can suppress it. Define it explicitly
+# to ensure it is always available to both stack and app projects.
+add_compile_definitions(__TI_COMPILER_VERSION)

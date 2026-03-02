@@ -85,7 +85,7 @@ set(STACK_SOURCES
 )
 
 # ─── Stack Library Target ─────────────────────────────────────────────────────
-add_library(${PROJECT_NAME} STATIC ${STACK_SOURCES})
+add_executable(${PROJECT_NAME} STATIC ${STACK_SOURCES})
 
 # ─── Include Directories ─────────────────────────────────────────────────────
 # These mirror the include paths from the CCS project, plus the parent-of-inc
@@ -94,6 +94,10 @@ target_include_directories(${PROJECT_NAME} PUBLIC
     # BLE core public headers
     "${SDK_ROOT}/inc"
     "${SDK_ROOT}/controller/cc26xx/inc"
+
+    # COMMON CC26xx
+    "${SDK_ROOT}/common/cc26xx"
+    "${SDK_ROOT}/common/cc26xx/time"
 
     # HAL
     "${SDK_ROOT}/components/hal/src/inc"
@@ -108,18 +112,36 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 
     # ICall
     "${SDK_ROOT}/icall/inc"
+    "${SDK_ROOT}/components/icall/src"
     "${SDK_ROOT}/components/icall/src/inc"
 
     # NPI
+    "${SDK_ROOT}/components/npi/src"
     "${SDK_ROOT}/components/npi/src/inc"
-    "${SDK_ROOT}/common/cc26xx/npi/stack"        # parent of inc/ for "inc/npi_ble.h"
+    "${SDK_ROOT}/components/npi/src/unified/inc"
+    "${SDK_ROOT}/components/npi/src/unified/subsystem"
+    "${SDK_ROOT}/common/cc26xx/npi/stack"
 
     # Profiles
     "${SDK_ROOT}/profiles/roles"
     "${SDK_ROOT}/profiles/roles/cc26xx"
 
+    # RCOSC
+    "${SDK_ROOT}/common/cc26xx/rcosc"
+
     # ROM
     "${SDK_ROOT}/rom"
+
+    # SERVICES
+    "${SDK_ROOT}/components/services/src/aes/cc26xx"
+    "${SDK_ROOT}/components/services/src/appasrt"
+    "${SDK_ROOT}/components/services/src/appasrt/cc26xx"
+    "${SDK_ROOT}/components/services/src/kcb"
+    "${SDK_ROOT}/components/services/src/nv"
+    "${SDK_ROOT}/components/services/src/nv/cc26xx"
+    "${SDK_ROOT}/components/services/src/saddr"
+    "${SDK_ROOT}/components/services/src/sdata"
+    "${SDK_ROOT}/components/services/src/watchdog"
 
     # Board (CC2650 EM variant used by simple_peripheral)
     "${SDK_ROOT}/boards/CC2650DK_7ID"
@@ -130,19 +152,94 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 
 # ─── Compile Definitions ──────────────────────────────────────────────────────
 target_compile_definitions(${PROJECT_NAME} PRIVATE
-    CC2650DK_7ID
+    # ── Compiler compatibility ────────────────────────────────────────────────
+    # ZBIT gates out OSAL code paths written for older TI-CGT (16.x) where
+    # ltoa() took 2 arguments. CGT 20.x requires 3 arguments, causing a
+    # build error. ZBIT skips the broken wrapper in osal.c and osal_memory.c.
+    # Safe for BLE-only builds — ZBIT originally targeted Zigbee/Z-Stack variants.
+    ZBIT
+
+    # ── Device Type Specific Defenitions (Simple Peripheral) ──────────────────
+    # ── Substitute for running lib_search tool with input 
+    # ──  examples/cc2650em/simple_peripheral/iar/stack/build_config.opt
+    # ── Instead this project is setup to be a peripheral, so set the defines here
+    HOST_CONFIG=PERIPHERAL_CFG
+    GAP_BOND_MGR
+    HCI_TL_NONE
+
+    # ── From BLE Host/Controller Build Components ─────────────────────────────
+    BROADCASTER_CFG=0x01
+    OBSERVER_CFG=0x02
+    PERIPHERAL_CFG=0x04
+    CENTRAL_CFG=0x08
+    ADV_NCONN_CFG=0x01
+    ADV_CONN_CFG=0x02
+    SCAN_CFG=0x04
+    INIT_CFG=0x08
+    ADV_CFG=ADV_NCONN_CFG+ADV_CONN_CFG
+    LINK_CFG=ADV_CONN_CFG+INIT_CFG
+    FULL_CFG=INIT_CFG+SCAN_CFG+ADV_NCONN_CFG+ADV_CONN_CFG
+    L2CAP_COC_CFG=0x80
+    HOST_V41_MASK=0x80
+    PING_CFG=0x01
+    SLV_FEAT_EXCHG_CFG=0x02
+    CONN_PARAM_REQ_CFG=0x04
+    LOW_DUTY_CYCLE_DIRECTED_CFG=0x08
+    DTM_625US_TX_CFG=0x10
+    FRAG_CFG=0x20
+    MST_SLV_CFG=0x40
+    V41_CTRL_CFG=0x47
+    CTRL_V41_MASK=0x7F
+    PRIVACY_1_2_CFG=0x01
+    SECURE_CONNS_CFG=0x02
+    EXT_DATA_LEN_CFG=0x04
+
+    # ── From CCS compiler flags ───────────────────────────────────────────────
     CC26XX
-    CCS
-    GAPROLE_TASK_STACK_SIZE=540
-    HEAPMGR_SIZE=0
-    ICALL_MAX_NUM_ENTITIES=6
-    ICALL_MAX_NUM_TASKS=3
+    CC26XXWARE
+    DATA=
+    EXT_HAL_ASSERT
+    FLASH_ROM_BUILD
+    GATT_NO_CLIENT
+    INCLUDE_AES_DECRYPT
+    NEAR_FUNC=
+    OSAL_CBTIMER_NUM_TASKS=1
+    OSAL_SNV=1
     POWER_SAVING
     USE_ICALL
-    xBOARD_DISPLAY_EXCLUDE_LCD
-    xDisplay_DISABLE_ALL
-    xdc_runtime_Assert_DISABLE_ALL
-    xdc_runtime_Log_DISABLE_ALL
+    xDEBUG
+    xDEBUG_ENC
+    xDEBUG_GPIO
+    xDEBUG_SW_TRACE
+    xPM_DISABLE_PWRDOWN
+    xTESTMODES
+    xTEST_BLEBOARD
+)
+
+target_compile_options(${PROJECT_NAME} PRIVATE
+    --diag_warning=225
+    --diag_suppress=48
+    --diag_suppress=16004
+    --diag_wrap=off
+    --display_error_number
+)
+
+# ─── Link Options ──────────────────────────────────────────────────────────────
+target_link_options(${PROJECT_NAME} PRIVATE
+    # Stack memory map — defines FLASH and SRAM regions
+    "${SDK_ROOT}/common/cc26xx/ccs/cc26xx_stack.cmd"
+
+    # Stack size and heap
+    "--heap_size=0"
+    "--stack_size=256"
+
+    # Output files
+    "--map_file=${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.map"
+    "--xml_link_info=${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.xml"
+
+    # Required by cc26xx_stack.cmd
+    "--entry_point=startup_entry"
+    "--retain=g_pfnVectors"
 )
 
 # ─── Link Dependencies ────────────────────────────────────────────────────────
@@ -156,4 +253,28 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
     ble_host
     ble_ctrl
     ble_hci_tl
+)
+
+# ─── Post Build ──────────────────────────────────────────────────────────────
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+    # Generate .hex from .out
+    COMMAND "${TI_CGT_PATH}/armhex"
+            "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.out"
+            --intel
+            --outfile="${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.hex"
+    COMMENT "Generating hex file"
+    VERBATIM
+)
+
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+    # Run frontier to generate app memory boundaries
+    COMMAND ${CMAKE_COMMAND} -E make_directory
+            "${CMAKE_CURRENT_BINARY_DIR}/boundary"
+    COMMAND python3 "${FRONTIER_PY}"
+            ccs
+            "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.xml"
+            "${CMAKE_CURRENT_BINARY_DIR}/boundary/compiler_boundary.opt"
+            "${CMAKE_CURRENT_BINARY_DIR}/boundary/linker_boundary.cmd"
+    COMMENT "Running frontier.py to generate app memory boundaries"
+    VERBATIM
 )

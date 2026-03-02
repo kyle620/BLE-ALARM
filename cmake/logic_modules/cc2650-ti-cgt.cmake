@@ -6,6 +6,7 @@ add_library(cc2650_config INTERFACE)
 # 1. Compiler Flags (C only)
 target_compile_options(cc2650_config INTERFACE 
     $<$<COMPILE_LANGUAGE:C>:
+        --c99
         --code_state=16
         -me
         --abi=eabi
@@ -24,7 +25,7 @@ target_compile_definitions(cc2650_config INTERFACE CCS)
 target_link_options(cc2650_config INTERFACE 
     --warn_sections
     --diag_wrap=on
-    --diag_warning=225
+    --diag_warning=255
     --display_error_number
     --rom_model
 )
