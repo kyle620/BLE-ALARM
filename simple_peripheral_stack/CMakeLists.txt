@@ -10,6 +10,8 @@ include_guard(GLOBAL)
 include("${CMAKE_CURRENT_LIST_DIR}/../cmake/logic_modules/cortex-m3.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/../cmake/logic_modules/cc2650-ti-cgt.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/../cmake/external_libraries/TIRTOS-Paths.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/../cmake/tools/frontier.cmake")
+
 
 # ─── SDK Root ─────────────────────────────────────────────────────────────────
 # The SDK is a plain source tree with no CMakeLists.txt. We point into it
@@ -85,7 +87,7 @@ set(STACK_SOURCES
 )
 
 # ─── Stack Library Target ─────────────────────────────────────────────────────
-add_executable(${PROJECT_NAME} STATIC ${STACK_SOURCES})
+add_executable(${PROJECT_NAME} ${STACK_SOURCES})
 
 # ─── Include Directories ─────────────────────────────────────────────────────
 # These mirror the include paths from the CCS project, plus the parent-of-inc
@@ -256,6 +258,8 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
 )
 
 # ─── Post Build ──────────────────────────────────────────────────────────────
+add_frontier(${PROJECT_NAME})
+
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
     # Generate .hex from .out
     COMMAND "${TI_CGT_PATH}/armhex"

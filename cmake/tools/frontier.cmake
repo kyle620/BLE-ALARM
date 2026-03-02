@@ -11,9 +11,28 @@
 # ─────────────────────────────────────────────────────────────────────────────
 function(add_frontier TARGET)
     set(FRONTIER_PY
-        "${CMAKE_CURRENT_LIST_DIR}/../../../../simplelink-ble_sdk_2_02_08_12/tools/frontier.py"
+        "${CMAKE_CURRENT_LIST_DIR}/../../simplelink-ble_sdk_2_02_08_12/tools/frontier.py"
         CACHE PATH "Path to frontier.py"
     )
+    message(STATUS "[Frontier Tool] Path to Python File: ${FRONTIER_PY}")
+
+    # ─── Python3 Requirement ──────────────────────────────────────────────────────
+    # frontier.py requires Python 3. Verify it is available at configure time
+    # so the user gets a clear error immediately rather than a cryptic failure
+    # during the build step.
+    find_package(Python3 REQUIRED
+        COMPONENTS Interpreter
+    )
+
+    if(NOT Python3_FOUND)
+        message(FATAL_ERROR
+            "Python3 is required to run frontier.py but was not found.\n"
+            "Install it with: apt-get install python3"
+        )
+    endif()
+
+message(STATUS "Found Python3: ${Python3_EXECUTABLE} (version ${Python3_VERSION})")
+
     set(BOUNDARY_DIR    "${CMAKE_CURRENT_BINARY_DIR}/boundary")
     set(STACK_XML       "${CMAKE_CURRENT_BINARY_DIR}/${TARGET}.xml")
     set(COMPILER_BOUNDARY "${BOUNDARY_DIR}/compiler_boundary.opt")
