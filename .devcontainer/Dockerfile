@@ -10,6 +10,8 @@ RUN apt-get update -qq && \
     git \
     libc6-i386 \
     ninja-build \
+    python3 \
+    python3-pip \
     wget \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
