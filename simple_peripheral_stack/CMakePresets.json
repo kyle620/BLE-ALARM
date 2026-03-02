@@ -4,18 +4,17 @@
         {
             "name": "base",
             "hidden": true,
-            "toolchainFile": "${sourceDir}/cmake/toolchains/ti-cgt-toolchain.cmake",
+            "toolchainFile": "${sourceDir}/../cmake/toolchains/ti-cgt-toolchain.cmake",
             "generator": "Ninja",
             "cacheVariables": {
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
             }
         },
-
         {
             "name": "stack-debug",
             "displayName": "Stack — Debug (CC2650 Peripheral)",
             "inherits": "base",
-            "binaryDir": "${sourceDir}/simple_peripheral_stack/build/debug",
+            "binaryDir": "${sourceDir}/build/debug",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug"
             }
@@ -24,26 +23,7 @@
             "name": "stack-release",
             "displayName": "Stack — Release (CC2650 Peripheral)",
             "inherits": "base",
-            "binaryDir": "${sourceDir}/simple_peripheral_stack/build/release",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Release"
-            }
-        },
-
-        {
-            "name": "app-debug",
-            "displayName": "App — Debug",
-            "inherits": "base",
-            "binaryDir": "${sourceDir}/simple_peripheral_app/build/debug",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug"
-            }
-        },
-        {
-            "name": "app-release",
-            "displayName": "App — Release",
-            "inherits": "base",
-            "binaryDir": "${sourceDir}/simple_peripheral_app/build/release",
+            "binaryDir": "${sourceDir}/build/release",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release"
             }
@@ -66,18 +46,6 @@
             "displayName": "Build Stack — Release",
             "inherits": "build-base",
             "configurePreset": "stack-release"
-        },
-        {
-            "name": "app-debug",
-            "displayName": "Build App — Debug",
-            "inherits": "build-base",
-            "configurePreset": "app-debug"
-        },
-        {
-            "name": "app-release",
-            "displayName": "Build App — Release",
-            "inherits": "build-base",
-            "configurePreset": "app-release"
         }
     ]
 }

@@ -5,6 +5,9 @@
             "label": "CMake: configure stack",
             "type": "shell",
             "command": "cmake --preset stack-debug --log-level=VERBOSE 2>&1",
+            "options" : {
+                "cwd": "${workspaceFolder}/simple_peripheral_stack"
+            },
             "group": {
                 "kind": "build", // Ctrl+Shift+B will trigger this task
                 "isDefault": true
@@ -13,7 +16,10 @@
         {
             "label": "CMake: build stack",
             "type": "shell",
-            "command": "cmake --build --preset stack-debug 2>&1 | tee build.log" ,
+            "command": "cmake --build --preset stack-debug 2>&1 | tee build/debug/build.log" ,
+            "options" : {
+                "cwd": "${workspaceFolder}/simple_peripheral_stack"
+            },
             "group": {
                 "kind": "build", // Ctrl+Shift+B will trigger this task
                 "isDefault": true
@@ -23,6 +29,9 @@
             "label": "CMake: configure app",
             "type": "shell",
             "command": "cmake --preset app-debug --log-level=VERBOSE 2>&1",
+            "options" : {
+                "cwd": "${workspaceFolder}/simple_peripheral_app"
+            },
             "group": {
                 "kind": "build", // Ctrl+Shift+B will trigger this task
                 "isDefault": true
@@ -31,28 +40,65 @@
         {
             "label": "CMake: build app",
             "type": "shell",
-            "command": "cmake --build --preset stack-app 2>&1 | tee build.log",
+            "command": "cmake --build --preset app-debug 2>&1 | tee build/debug/build.log",
+            "options" : {
+                "cwd": "${workspaceFolder}/simple_peripheral_app"
+            },
             "group": {
                 "kind": "build", // Ctrl+Shift+B will trigger this task
+                "isDefault": true
+            }
+        },
+        {
+            "label": "CMake: build all",
+            "dependsOn": ["CMake: build stack", "CMake: build app"],
+            "dependsOrder": "sequence",
+            "group": {
+                "kind": "build",
                 "isDefault": true
             }
         },
         {
             "label": "CMake: clean stack",
             "type": "shell",
-            "command": "rm -rf build/stack-debug",
+            "command": "rm -rf build/debug build/release",
             "group": {
-                "kind": "build", // Ctrl+Shift+B will trigger this task
+                "kind": "build",
                 "isDefault": true
+            },
+            "options": {
+                "cwd": "${workspaceFolder}/simple_peripheral_stack"
             }
         },
         {
             "label": "CMake: clean app",
             "type": "shell",
-            "command": "rm -rf build/app-debug",
+            "command": "rm -rf build/debug build/release",
             "group": {
-                "kind": "build", // Ctrl+Shift+B will trigger this task
+                "kind": "build",
                 "isDefault": true
+            },
+            "options": {
+                "cwd": "${workspaceFolder}/simple_peripheral_app"
+            }
+        },
+        {
+            "label": "CMake: clean all",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "dependsOn": ["CMake: clean stack", "CMake: clean app"],
+            "dependsOrder": "parallel"
+        },
+        {
+            "label": "CMake: rebuild all",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "dependsOn": ["CMake: clean all", "CMake: build all"],
+            "dependsOrder": "sequence",
         }
     ]   
 }

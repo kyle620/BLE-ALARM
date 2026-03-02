@@ -1,0 +1,51 @@
+{
+    "version": 8,
+    "configurePresets": [
+        {
+            "name": "base",
+            "hidden": true,
+            "toolchainFile": "${sourceDir}/../cmake/toolchains/ti-cgt-toolchain.cmake",
+            "generator": "Ninja",
+            "cacheVariables": {
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+            }
+        },
+        {
+            "name": "app-debug",
+            "displayName": "App — Debug (CC2650 Peripheral)",
+            "inherits": "base",
+            "binaryDir": "${sourceDir}/build/debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "app-release",
+            "displayName": "App — Release (CC2650 Peripheral)",
+            "inherits": "base",
+            "binaryDir": "${sourceDir}/build/release",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "build-base",
+            "hidden": true,
+            "verbose": true
+        },
+        {
+            "name": "app-debug",
+            "displayName": "Build app — Debug",
+            "inherits": "build-base",
+            "configurePreset": "app-debug"
+        },
+        {
+            "name": "app-release",
+            "displayName": "Build app — Release",
+            "inherits": "build-base",
+            "configurePreset": "app-release"
+        }
+    ]
+}
