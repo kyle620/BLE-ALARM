@@ -2,38 +2,82 @@
     "version": 8,
     "configurePresets": [
         {
-            "name": "hello-config-base",
-            "displayName": "Base Configuration",
-            "binaryDir": "${sourceDir}/build/${presetName}",
-            "toolchainFile": "${sourceDir}/simplelink-ble_sdk_2_02_08_12/cmake/toolchains/ti-cgt-toolchain.cmake",
+            "name": "base",
+            "hidden": true,
+            "toolchainFile": "${sourceDir}/cmake/toolchains/ti-cgt-toolchain.cmake",
+            "generator": "Ninja",
             "cacheVariables": {
-                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
-                "CMAKE_RUNTIME_OUTPUT_DIRECTORY": "bin"
-            },
-            "generator": "Ninja"
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+            }
         },
+
         {
-            "name": "hello-config-debug",
-            "inherits": "hello-config-base",
-            "displayName": "Debug (Cortex-M3)",
+            "name": "stack-debug",
+            "displayName": "Stack — Debug (CC2650 Peripheral)",
+            "inherits": "base",
+            "binaryDir": "${sourceDir}/simple_peripheral_stack/build/debug",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "stack-release",
+            "displayName": "Stack — Release (CC2650 Peripheral)",
+            "inherits": "base",
+            "binaryDir": "${sourceDir}/simple_peripheral_stack/build/release",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        },
+
+        {
+            "name": "app-debug",
+            "displayName": "App — Debug",
+            "inherits": "base",
+            "binaryDir": "${sourceDir}/simple_peripheral_app/build/debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "app-release",
+            "displayName": "App — Release",
+            "inherits": "base",
+            "binaryDir": "${sourceDir}/simple_peripheral_app/build/release",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
             }
         }
     ],
     "buildPresets": [
         {
-            "name": "hello-build-base",
-            "displayName": "Base Build",
+            "name": "build-base",
             "hidden": true,
-            "configurePreset": "hello-config-base",
-            "jobs": 4
+            "verbose": true
         },
         {
-            "name": "hello-build-debug",
-            "displayName": "Debug Build (Cortex-M3)",
-            "inherits": "hello-build-base",
-            "configurePreset": "hello-config-debug"
+            "name": "stack-debug",
+            "displayName": "Build Stack — Debug",
+            "inherits": "build-base",
+            "configurePreset": "stack-debug"
+        },
+        {
+            "name": "stack-release",
+            "displayName": "Build Stack — Release",
+            "inherits": "build-base",
+            "configurePreset": "stack-release"
+        },
+        {
+            "name": "app-debug",
+            "displayName": "Build App — Debug",
+            "inherits": "build-base",
+            "configurePreset": "app-debug"
+        },
+        {
+            "name": "app-release",
+            "displayName": "Build App — Release",
+            "inherits": "build-base",
+            "configurePreset": "app-release"
         }
     ]
 }

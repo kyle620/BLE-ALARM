@@ -2,12 +2,6 @@ cmake_minimum_required(VERSION 3.28)
 
 project(hello-test)
 
-message(STATUS "--- Environment Check ---")
-message(STATUS "TI Compiler: ${CMAKE_C_COMPILER}")
-message(STATUS "XDC Root:    ${XDC_ROOT}")
-message(STATUS "TIRTOS Root: ${TIRTOS_ROOT}")
-message(STATUS "-------------------------")
-
 add_subdirectory(simplelink-ble_sdk_2_02_08_12)
 
 include(simplelink-ble_sdk_2_02_08_12/cmake/external_libraries/TIRTOS-Config.cmake)
@@ -44,7 +38,6 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 )
 
 # Declare pre-built TI libraries as imported targets
-message(STATUS "driverlib path: ${TIRTOS_ROOT}/products/cc26xxware_2_24_03_17272/driverlib/bin/ti/targets/arm/elf/M3/driverlib.aem3")
 add_library(driverlib STATIC IMPORTED GLOBAL)
 set_target_properties(driverlib PROPERTIES
     IMPORTED_LOCATION "${TIRTOS_ROOT}/products/cc26xxware_2_24_03_17272/driverlib/bin/ccs/driverlib.lib"
@@ -65,7 +58,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE cortex_m3_opts)
 target_link_libraries(${PROJECT_NAME} PRIVATE cc2650_config)
 
 # This handles the complex XDCtools logic for you
-add_tirtos_config(${PROJECT_NAME} app/config_tirtos/hello.cfg)
+# add_tirtos_config(${PROJECT_NAME} app/config_tirtos/hello.cfg)
 
 # Link TIRTOS libraries
 target_link_libraries(${PROJECT_NAME} PRIVATE

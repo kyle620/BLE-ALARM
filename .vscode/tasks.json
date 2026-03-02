@@ -2,49 +2,57 @@
     "version": "2.0.0",
     "tasks":[
         {
-            "label": "CMake: configure",
+            "label": "CMake: configure stack",
             "type": "shell",
-            "command": "cmake --preset hello-config-debug",
+            "command": "cmake --preset stack-debug --log-level=VERBOSE 2>&1",
             "group": {
                 "kind": "build", // Ctrl+Shift+B will trigger this task
                 "isDefault": true
             }
         },
         {
-            "label": "CMake: build",
+            "label": "CMake: build stack",
             "type": "shell",
-            "command": "cmake --build build/hello-config-debug -- -j" ,
+            "command": "cmake --build --preset stack-debug 2>&1 | tee build.log" ,
             "group": {
                 "kind": "build", // Ctrl+Shift+B will trigger this task
                 "isDefault": true
             }
         },
         {
-            "label": "CMake: clean",
+            "label": "CMake: configure app",
             "type": "shell",
-            "command": "find build -mindepth 2 -maxdepth 2 -exec rm -rf {} \\;" ,
+            "command": "cmake --preset app-debug --log-level=VERBOSE 2>&1",
             "group": {
                 "kind": "build", // Ctrl+Shift+B will trigger this task
                 "isDefault": true
             }
         },
         {
-                        "label": "CMake: clean cache",
+            "label": "CMake: build app",
             "type": "shell",
-            "command": "rm -rf build/hello-config-debug",
+            "command": "cmake --build --preset stack-app 2>&1 | tee build.log",
             "group": {
                 "kind": "build", // Ctrl+Shift+B will trigger this task
                 "isDefault": true
             }
         },
         {
-            "label": "CMake: rebuild (clean + configure + build)",
+            "label": "CMake: clean stack",
             "type": "shell",
-            "command": "rm -rf build/hello-config-debug && cmake --preset hello-config-debug && cmake --build build/hello-config-debug -- -j",
+            "command": "rm -rf build/stack-debug",
             "group": {
-                "kind": "build",
+                "kind": "build", // Ctrl+Shift+B will trigger this task
                 "isDefault": true
             }
+        },
+        {
+            "label": "CMake: clean app",
+            "type": "shell",
+            "command": "rm -rf build/app-debug",
+            "group": {
+                "kind": "build", // Ctrl+Shift+B will trigger this task
+                "isDefault": true
         }
     ]   
 }
