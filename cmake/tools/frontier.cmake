@@ -11,7 +11,7 @@
 # ─────────────────────────────────────────────────────────────────────────────
 function(add_frontier TARGET)
     set(FRONTIER_PY
-        "${CMAKE_CURRENT_LIST_DIR}/../../simplelink-ble_sdk_2_02_08_12/tools/frontier.py"
+        "${CMAKE_CURRENT_LIST_DIR}/../simplelink-ble_sdk_2_02_08_12/tools/frontier/src/frontier.py"
         CACHE PATH "Path to frontier.py"
     )
     message(STATUS "[Frontier Tool] Path to Python File: ${FRONTIER_PY}")

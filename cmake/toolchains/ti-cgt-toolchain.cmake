@@ -39,8 +39,10 @@ set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 # ─── Linker ─────────────────────────────────────────────────────────────────
 # -z activates link mode and MUST come first, before any object files.
 # -o MUST come after all objects and libraries.
+set(CMAKE_C_COMPILER_WORKS TRUE CACHE BOOL "" FORCE)
 set(CMAKE_C_LINK_EXECUTABLE
-    "<CMAKE_C_COMPILER> -z --rom_model <OBJECTS> <LINK_FLAGS> <LINK_LIBRARIES> -o <TARGET>"
+    "<CMAKE_C_COMPILER> -z --rom_model --reread_libs <OBJECTS> <LINK_FLAGS> -o <TARGET>"
+    CACHE STRING "" FORCE
 )
 
 # ─── Archiver ───────────────────────────────────────────────────────────────

@@ -19,24 +19,6 @@ include("${CMAKE_CURRENT_LIST_DIR}/../cmake/tools/frontier.cmake")
 set(SDK_ROOT "${CMAKE_CURRENT_LIST_DIR}/../simplelink-ble_sdk_2_02_08_12/src"
     CACHE PATH "Path to BLE SDK src directory")
 
-# ─── Pre-built BLE Stack Libraries ───────────────────────────────────────────
-# These are the closed-source core stack blobs shipped by TI.
-# They are NOT compiled — only linked.
-add_library(ble_host STATIC IMPORTED GLOBAL)
-set_target_properties(ble_host PROPERTIES
-    IMPORTED_LOCATION "${CMAKE_CURRENT_LIST_DIR}/../simplelink-ble_sdk_2_02_08_12/blelib/host/host_pxxx.a"
-)
-
-add_library(ble_ctrl STATIC IMPORTED GLOBAL)
-set_target_properties(ble_ctrl PROPERTIES
-    IMPORTED_LOCATION "${CMAKE_CURRENT_LIST_DIR}/../simplelink-ble_sdk_2_02_08_12/blelib/ctrl/cc2640/cc2640_ctrl_pxxx.a"
-)
-
-add_library(ble_hci_tl STATIC IMPORTED GLOBAL)
-set_target_properties(ble_hci_tl PROPERTIES
-    IMPORTED_LOCATION "${CMAKE_CURRENT_LIST_DIR}/../simplelink-ble_sdk_2_02_08_12/blelib/hci_tl/cc26xx/cc26xx_hci_tl_none.a"
-)
-
 # ─── Explicit Source List ─────────────────────────────────────────────────────
 # This list mirrors the CCS simple_peripheral_cc2650em_stack .project file
 # exactly. Do not use GLOB here — CCS hand-picks these files per example,
@@ -196,7 +178,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     SECURE_CONNS_CFG=0x02
     EXT_DATA_LEN_CFG=0x04
 
-    # ── From CCS compiler flags ───────────────────────────────────────────────
+    # ── From CCS Example ───────────────────────────────────────────────
     CC26XX
     CC26XXWARE
     DATA=
@@ -222,53 +204,67 @@ target_compile_options(${PROJECT_NAME} PRIVATE
     --diag_warning=225
     --diag_suppress=48
     --diag_suppress=16004
-    --diag_wrap=off
     --display_error_number
 )
 
 # ─── Link Options ──────────────────────────────────────────────────────────────
 target_link_options(${PROJECT_NAME} PRIVATE
-    # Stack memory map — defines FLASH and SRAM regions
-    "${SDK_ROOT}/common/cc26xx/ccs/cc26xx_stack.cmd"
 
     # Stack size and heap
     "--heap_size=0"
     "--stack_size=256"
 
     # Output files
+    "--output_file=${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.out"
     "--map_file=${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.map"
     "--xml_link_info=${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.xml"
 
     # Required by cc26xx_stack.cmd
     "--entry_point=startup_entry"
     "--retain=g_pfnVectors"
+    
+    # Stack memory map — defines FLASH and SRAM regions
+    "${SDK_ROOT}/common/cc26xx/ccs/cc26xx_stack.cmd"
 )
 
 # ─── Link Dependencies ────────────────────────────────────────────────────────
 # cortex_m3_opts and cc2650_config carry compiler/linker flags via INTERFACE.
 # tirtos_config carries all TIRTOS/XDC include paths.
-# ble_host/ctrl/hci_tl are the pre-built closed-source stack blobs.
 target_link_libraries(${PROJECT_NAME} PUBLIC
     cortex_m3_opts
     cc2650_config
     tirtos_config
-    ble_host
-    ble_ctrl
-    ble_hci_tl
 )
+
+# ─── Pre-built BLE Stack Libraries ───────────────────────────────────────────
+# TI-CGT's linker requires .a files passed as positional arguments rather
+# than via -l flags. Pass them directly via target_link_options so they
+# appear correctly in the armcl -z invocation.
+target_link_options(${PROJECT_NAME} PRIVATE
+    --reread_libs
+    --unused_section_elimination=on
+    --compress_dwarf=on
+    --diag_suppress=16002-D
+    --diag_suppress=10247-D
+    --diag_suppress=10325-D
+    --diag_suppress=10229-D
+
+    # Positional inputs — no -l, passed like object files
+    "${CMAKE_CURRENT_LIST_DIR}/../simplelink-ble_sdk_2_02_08_12/blelib/host/host_pxxx.a"
+    "${CMAKE_CURRENT_LIST_DIR}/../simplelink-ble_sdk_2_02_08_12/blelib/ctrl/cc2640/cc2640_ctrl_pxxx.a"
+    "${CMAKE_CURRENT_LIST_DIR}/../simplelink-ble_sdk_2_02_08_12/blelib/hci_tl/cc26xx/cc26xx_hci_tl_none.a"
+
+    # -l libraries — searched via --search_path, placed after positional inputs
+    "-l${SDK_ROOT}/rom/ble_rom_releases/04242014/ble_rom_patch.symbols"
+    "-l${TIRTOS_ROOT}/products/cc26xxware_2_24_03_17272/driverlib/bin/ccs/driverlib.lib"
+
+    # Replace libc.a with the correct pre-built RTS for -mv7M3 --code_state=16 -me --abi=eabi
+    "${TI_CGT_ROOT}/lib/rtsv7M3_T_le_eabi.lib"
+)
+
 
 # ─── Post Build ──────────────────────────────────────────────────────────────
 add_frontier(${PROJECT_NAME})
-
-add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-    # Generate .hex from .out
-    COMMAND "${TI_CGT_PATH}/armhex"
-            "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.out"
-            --intel
-            --outfile="${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.hex"
-    COMMENT "Generating hex file"
-    VERBATIM
-)
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
     # Run frontier to generate app memory boundaries
@@ -280,5 +276,15 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
             "${CMAKE_CURRENT_BINARY_DIR}/boundary/compiler_boundary.opt"
             "${CMAKE_CURRENT_BINARY_DIR}/boundary/linker_boundary.cmd"
     COMMENT "Running frontier.py to generate app memory boundaries"
+    VERBATIM
+)
+
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+    # Generate .hex from .out
+    COMMAND "${TI_CGT_PATH}/armhex"
+            "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.out"
+            --intel
+            --outfile="${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.hex"
+    COMMENT "Generating hex file"
     VERBATIM
 )
