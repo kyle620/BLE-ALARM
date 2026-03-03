@@ -264,6 +264,21 @@ target_link_options(${PROJECT_NAME} PRIVATE
 
 
 # ─── Post Build ──────────────────────────────────────────────────────────────
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+    # Generate .hex from .out
+    COMMAND "${TI_CGT_PATH}/armhex"
+            -order
+            MS
+            --memwidth=8
+            --romwidth=8
+            --intel
+            -o
+            "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.hex"
+            "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.out"
+    COMMENT "Generating hex file"
+    VERBATIM
+)
+
 add_frontier(${PROJECT_NAME})
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
@@ -276,15 +291,5 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
             "${CMAKE_CURRENT_BINARY_DIR}/boundary/compiler_boundary.opt"
             "${CMAKE_CURRENT_BINARY_DIR}/boundary/linker_boundary.cmd"
     COMMENT "Running frontier.py to generate app memory boundaries"
-    VERBATIM
-)
-
-add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-    # Generate .hex from .out
-    COMMAND "${TI_CGT_PATH}/armhex"
-            "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.out"
-            --intel
-            --outfile="${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.hex"
-    COMMENT "Generating hex file"
     VERBATIM
 )
