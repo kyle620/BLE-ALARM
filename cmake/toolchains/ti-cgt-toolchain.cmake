@@ -35,14 +35,18 @@ set(CMAKE_C_COMPILER_ID        TI)
 set(CMAKE_CXX_COMPILER_ID_RUN  TRUE)
 set(CMAKE_CXX_COMPILER_ID      TI)
 set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
+set(CMAKE_C_COMPILER_WORKS TRUE CACHE BOOL "" FORCE)
 
 # ─── Linker ─────────────────────────────────────────────────────────────────
+set(CMAKE_EXE_LINKER_FLAGS_INIT "--rom_model --reread_libs")
+
 # -z activates link mode and MUST come first, before any object files.
 # -o MUST come after all objects and libraries.
-set(CMAKE_C_COMPILER_WORKS TRUE CACHE BOOL "" FORCE)
-set(CMAKE_C_LINK_EXECUTABLE
-    "<CMAKE_C_COMPILER> -z --rom_model --reread_libs <OBJECTS> <LINK_FLAGS> -o <TARGET>"
-    CACHE STRING "" FORCE
+# <FALGS> 
+# <CMAKE_C_LINK_FLAGS Global Scope (All executables)
+# <LINK_FLAGS> Specific Target Scope
+set(CMAKE_C_LINK_EXECUTABLE 
+    "<CMAKE_C_COMPILER> <FLAGS> -z <CMAKE_C_LINK_FLAGS> <LINK_FLAGS> <OBJECTS> <LINK_LIBRARIES> -o <TARGET>"
 )
 
 # ─── Archiver ───────────────────────────────────────────────────────────────

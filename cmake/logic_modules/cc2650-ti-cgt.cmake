@@ -8,6 +8,8 @@ target_compile_options(cc2650_config INTERFACE
     --c11
     --code_state=16
     -me
+    -O4
+    --opt_for_speed=0
     --abi=eabi
     -g
     --gen_func_subsections=on
@@ -15,9 +17,6 @@ target_compile_options(cc2650_config INTERFACE
     --diag_warning=225
     --display_error_number
 )
-
-# 2. Preprocessor Definitions
-target_compile_definitions(cc2650_config INTERFACE CCS)
 
 # 3. Linker Flags
 target_link_options(cc2650_config INTERFACE 

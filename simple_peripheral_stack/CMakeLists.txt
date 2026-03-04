@@ -209,22 +209,33 @@ target_compile_options(${PROJECT_NAME} PRIVATE
 
 # ─── Link Options ──────────────────────────────────────────────────────────────
 target_link_options(${PROJECT_NAME} PRIVATE
-
+    # Output map file
+    "--map_file=${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.map"
+    
     # Stack size and heap
-    "--heap_size=0"
     "--stack_size=256"
+    "--heap_size=0"
+    "--unused_section_elimination=on"
+    "--compress_dwarf=on"
+    "--diag_suppress=16002-D"
+    "--diag_suppress=10247-D"
+    "--diag_suppress=10325-D"
+    "--diag_suppress=10229-D"
 
     # Output files
-    "--output_file=${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.out"
-    "--map_file=${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.map"
     "--xml_link_info=${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.xml"
+    "--output_file=${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.out"
 
     # Required by cc26xx_stack.cmd
     "--entry_point=startup_entry"
-    "--retain=g_pfnVectors"
     
     # Stack memory map — defines FLASH and SRAM regions
     "${SDK_ROOT}/common/cc26xx/ccs/cc26xx_stack.cmd"
+
+    # Positional inputs — no -l, passed like object files
+    "${CMAKE_CURRENT_LIST_DIR}/../simplelink-ble_sdk_2_02_08_12/blelib/host/host_pxxx.a"
+    "${CMAKE_CURRENT_LIST_DIR}/../simplelink-ble_sdk_2_02_08_12/blelib/ctrl/cc2640/cc2640_ctrl_pxxx.a"
+    "${CMAKE_CURRENT_LIST_DIR}/../simplelink-ble_sdk_2_02_08_12/blelib/hci_tl/cc26xx/cc26xx_hci_tl_none.a"
 )
 
 # ─── Link Dependencies ────────────────────────────────────────────────────────
@@ -234,29 +245,8 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
     cortex_m3_opts
     cc2650_config
     tirtos_config
-)
-
-# ─── Pre-built BLE Stack Libraries ───────────────────────────────────────────
-# TI-CGT's linker requires .a files passed as positional arguments rather
-# than via -l flags. Pass them directly via target_link_options so they
-# appear correctly in the armcl -z invocation.
-target_link_options(${PROJECT_NAME} PRIVATE
-    --reread_libs
-    --unused_section_elimination=on
-    --compress_dwarf=on
-    --diag_suppress=16002-D
-    --diag_suppress=10247-D
-    --diag_suppress=10325-D
-    --diag_suppress=10229-D
-
-    # Positional inputs — no -l, passed like object files
-    "${CMAKE_CURRENT_LIST_DIR}/../simplelink-ble_sdk_2_02_08_12/blelib/host/host_pxxx.a"
-    "${CMAKE_CURRENT_LIST_DIR}/../simplelink-ble_sdk_2_02_08_12/blelib/ctrl/cc2640/cc2640_ctrl_pxxx.a"
-    "${CMAKE_CURRENT_LIST_DIR}/../simplelink-ble_sdk_2_02_08_12/blelib/hci_tl/cc26xx/cc26xx_hci_tl_none.a"
-
-    # -l libraries — searched via --search_path, placed after positional inputs
-    "-l${SDK_ROOT}/rom/ble_rom_releases/04242014/ble_rom_patch.symbols"
-    "-l${TIRTOS_ROOT}/products/cc26xxware_2_24_03_17272/driverlib/bin/ccs/driverlib.lib"
+    "${SDK_ROOT}/rom/ble_rom_releases/04242014/ble_rom_patch.symbols"
+    "${TIRTOS_ROOT}/products/cc26xxware_2_24_03_17272/driverlib/bin/ccs/driverlib.lib"
 
     # Replace libc.a with the correct pre-built RTS for -mv7M3 --code_state=16 -me --abi=eabi
     "${TI_CGT_ROOT}/lib/rtsv7M3_T_le_eabi.lib"
