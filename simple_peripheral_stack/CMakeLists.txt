@@ -12,7 +12,6 @@ include("${CMAKE_CURRENT_LIST_DIR}/../cmake/logic_modules/cc2650-ti-cgt.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/../cmake/external_libraries/TIRTOS-Paths.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/../cmake/tools/frontier.cmake")
 
-
 # ─── SDK Root ─────────────────────────────────────────────────────────────────
 # The SDK is a plain source tree with no CMakeLists.txt. We point into it
 # explicitly — mirroring exactly what the CCS .project file does.
@@ -71,9 +70,12 @@ set(STACK_SOURCES
 # ─── Stack Library Target ─────────────────────────────────────────────────────
 add_executable(${PROJECT_NAME} ${STACK_SOURCES})
 
+# ─── Output File Extension ─────────────────────────────────────────────────────
+set_target_properties(${PROJECT_NAME} PROPERTIES
+    SUFFIX ".out"
+)
+
 # ─── Include Directories ─────────────────────────────────────────────────────
-# These mirror the include paths from the CCS project, plus the parent-of-inc
-# entries needed for headers included as "inc/foo.h".
 target_include_directories(${PROJECT_NAME} PUBLIC
     # BLE core public headers
     "${SDK_ROOT}/inc"
@@ -200,6 +202,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     xTEST_BLEBOARD
 )
 
+# ─── Compile Options ──────────────────────────────────────────────────────────
 target_compile_options(${PROJECT_NAME} PRIVATE
     --diag_warning=225
     --diag_suppress=48
@@ -207,12 +210,9 @@ target_compile_options(${PROJECT_NAME} PRIVATE
     --display_error_number
 )
 
-# ─── Link Options ──────────────────────────────────────────────────────────────
+# ─── Link Options ─────────────────────────────────────────────────────────────
 target_link_options(${PROJECT_NAME} PRIVATE
-    # Output map file
     "--map_file=${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.map"
-    
-    # Stack size and heap
     "--stack_size=256"
     "--heap_size=0"
     "--unused_section_elimination=on"
@@ -221,35 +221,29 @@ target_link_options(${PROJECT_NAME} PRIVATE
     "--diag_suppress=10247-D"
     "--diag_suppress=10325-D"
     "--diag_suppress=10229-D"
-
-    # Output files
     "--xml_link_info=${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.xml"
-    "--output_file=${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.out"
-
-    # Required by cc26xx_stack.cmd
     "--entry_point=startup_entry"
-    
-    # Stack memory map — defines FLASH and SRAM regions
+    "--retain=g_pfnVectors"
+
+    # Linker script
     "${SDK_ROOT}/common/cc26xx/ccs/cc26xx_stack.cmd"
 
-    # Positional inputs — no -l, passed like object files
+    # Positional BLE blobs
     "${CMAKE_CURRENT_LIST_DIR}/../simplelink-ble_sdk_2_02_08_12/blelib/host/host_pxxx.a"
     "${CMAKE_CURRENT_LIST_DIR}/../simplelink-ble_sdk_2_02_08_12/blelib/ctrl/cc2640/cc2640_ctrl_pxxx.a"
     "${CMAKE_CURRENT_LIST_DIR}/../simplelink-ble_sdk_2_02_08_12/blelib/hci_tl/cc26xx/cc26xx_hci_tl_none.a"
+
+    # Symbol/library inputs via -l
+    "-l${SDK_ROOT}/rom/ble_rom_releases/04242014/ble_rom_patch.symbols"
+    "-l${TIRTOS_ROOT}/products/cc26xxware_2_24_03_17272/driverlib/bin/ccs/driverlib.lib"
+    "-l${TI_CGT_ROOT}/lib/rtsv7M3_T_le_eabi.lib"
 )
 
-# ─── Link Dependencies ────────────────────────────────────────────────────────
-# cortex_m3_opts and cc2650_config carry compiler/linker flags via INTERFACE.
-# tirtos_config carries all TIRTOS/XDC include paths.
+# ─── Link Libaries ────────────────────────────────────────────────────────────
 target_link_libraries(${PROJECT_NAME} PUBLIC
     cortex_m3_opts
     cc2650_config
     tirtos_config
-    "${SDK_ROOT}/rom/ble_rom_releases/04242014/ble_rom_patch.symbols"
-    "${TIRTOS_ROOT}/products/cc26xxware_2_24_03_17272/driverlib/bin/ccs/driverlib.lib"
-
-    # Replace libc.a with the correct pre-built RTS for -mv7M3 --code_state=16 -me --abi=eabi
-    "${TI_CGT_ROOT}/lib/rtsv7M3_T_le_eabi.lib"
 )
 
 

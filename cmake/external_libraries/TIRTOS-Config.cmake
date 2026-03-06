@@ -64,7 +64,7 @@ function(add_tirtos_config TARGET CFG_FILE)
     # ── Wire generated artifacts into the target ──────────────────────────────
     target_link_options(${TARGET} PRIVATE
         "-i${CONFIG_OUT_DIR}"           # linker search path for configPkg
-        "${CONFIG_OUT_DIR}/linker.cmd"  # generated linker command file
+        "-l${CONFIG_OUT_DIR}/linker.cmd"  # generated linker command file
     )
     target_compile_options(${TARGET} PRIVATE
         "@${CONFIG_OUT_DIR}/compiler.opt"  # generated macros/includes
