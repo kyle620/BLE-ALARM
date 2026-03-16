@@ -8,6 +8,11 @@ include_guard(GLOBAL)
 
 add_library(tirtos_config INTERFACE)
 
+# In TIRTOS-Paths.cmake
+set(TI_RTOS_DRIVERS_BASE
+    "${TIRTOS_ROOT}/products/tidrivers_cc13xx_cc26xx_2_21_01_01/packages"
+    CACHE PATH "Path to TI-RTOS drivers packages")
+
 target_include_directories(tirtos_config INTERFACE
     "${TI_CGT_ROOT}/include"
     "${XDC_ROOT}/packages"

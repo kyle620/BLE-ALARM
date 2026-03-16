@@ -11,6 +11,7 @@ include("${CMAKE_CURRENT_LIST_DIR}/../cmake/logic_modules/cortex-m3.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/../cmake/logic_modules/cc2650-ti-cgt.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/../cmake/external_libraries/TIRTOS-Paths.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/../cmake/external_libraries/TIRTOS-Config.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/../cmake/tools/case_fixups.cmake")
 
 # ─── SDK Root ─────────────────────────────────────────────────────────────────
 # The SDK is a plain source tree with no CMakeLists.txt. We point into it
@@ -22,16 +23,56 @@ add_executable(${PROJECT_NAME})
 
 target_sources(${PROJECT_NAME}
 PRIVATE
-src/main.c
-src/simple_peripheral.c
-src/uart_task.c
+    # ── Application ──────────────────────────────────────────────────────────
+    src/main.c
+    src/simple_peripheral.c
+    src/uart_task.c
+
+    # ── ICallBLE ─────────────────────────────────────────────────────────────
+    "${SDK_ROOT}/icall/app/ble_user_config.c"
+    "${SDK_ROOT}/icall/app/icall_api.c"
+
+    # ── ICall (common) ───────────────────────────────────────────────────────
+    "${SDK_ROOT}/components/icall/src/icall.c"
+    "${SDK_ROOT}/components/icall/src/icall_cc2650.c"
+
+    # ── Profiles ─────────────────────────────────────────────────────────────
+    "${SDK_ROOT}/profiles/roles/cc26xx/peripheral.c"
+    "${SDK_ROOT}/profiles/dev_info/cc26xx/devinfoservice.c"
+    "${SDK_ROOT}/profiles/simple_profile/cc26xx/simple_gatt_profile.c"
+    "${SDK_ROOT}/host/gatt_uuid.c"
+    "${SDK_ROOT}/host/gattservapp_util.c"
+
+    # ── Common CC26xx ────────────────────────────────────────────────────────
+    "${SDK_ROOT}/common/cc26xx/util.c"
+    "${SDK_ROOT}/common/cc26xx/ecc/ECCROMCC26XX.c"
+
+    # ── HAL / TRNG ───────────────────────────────────────────────────────────
+    "${SDK_ROOT}/components/hal/src/target/_common/TRNGCC26XX.c"
+
+    # ── Board / Startup ──────────────────────────────────────────────────────
+    "${SDK_ROOT}/target/board.c"
+
+    # ── TI-RTOS Drivers ──────────────────────────────────────────────────────
+    "${TI_RTOS_DRIVERS_BASE}/ti/drivers/pin/PINCC26XX.c"
+    "${TI_RTOS_DRIVERS_BASE}/ti/drivers/rf/RFCC26XX_singleMode.c"
+    "${TI_RTOS_DRIVERS_BASE}/ti/drivers/SPI.c"
+    "${TI_RTOS_DRIVERS_BASE}/ti/drivers/spi/SPICC26XXDMA.c"
+    "${TI_RTOS_DRIVERS_BASE}/ti/drivers/UART.c"
+    "${TI_RTOS_DRIVERS_BASE}/ti/drivers/uart/UARTCC26XX.c"
+    "${TI_RTOS_DRIVERS_BASE}/ti/drivers/dma/UDMACC26XX.c"
+
+    # ── TI-RTOS Middleware ───────────────────────────────────────────────────
+    "${TI_RTOS_DRIVERS_BASE}/ti/mw/display/Display.c"
+    "${TI_RTOS_DRIVERS_BASE}/ti/mw/display/DisplayUart.c"
+    "${TI_RTOS_DRIVERS_BASE}/ti/mw/display/DisplayDogm1286.c"
 
 PUBLIC
-FILE_SET HEADERS
-BASE_DIRS hdr
-FILES
-hdr/simple_peripheral.h
-hdr/uart_task.h
+    FILE_SET HEADERS
+    BASE_DIRS hdr
+    FILES
+        hdr/simple_peripheral.h
+        hdr/uart_task.h
 )
 
 # ─── Include Directories ─────────────────────────────────────────────────────
@@ -51,6 +92,9 @@ target_include_directories(${PROJECT_NAME} PUBLIC
     "${SDK_ROOT}/components/hal/src/target"
     "${SDK_ROOT}/components/hal/src/target/cc2650tirtos"
 
+    #HEAP
+    "${SDK_ROOT}/components/heapmgr"
+
     # OSAL
     "${SDK_ROOT}/components/osal/src/inc"
     "${SDK_ROOT}/components/osal/src/mcu/cc26xx"
@@ -68,8 +112,10 @@ target_include_directories(${PROJECT_NAME} PUBLIC
     "${SDK_ROOT}/common/cc26xx/npi/stack"
 
     # Profiles
+    "${SDK_ROOT}/profiles/dev_info"
     "${SDK_ROOT}/profiles/roles"
     "${SDK_ROOT}/profiles/roles/cc26xx"
+    "${SDK_ROOT}/profiles/simple_profile"
 
     # RCOSC
     "${SDK_ROOT}/common/cc26xx/rcosc"
@@ -106,11 +152,9 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     ZBIT
 
     # ── Device Type Specific Defenitions (Simple Peripheral) ──────────────────
-    HOST_CONFIG=PERIPHERAL_CFG
-    GAP_BOND_MGR
-    HCI_TL_NONE
-    BOARD_DISPLAY_EXCLUDE_UART
-    CC2650DK_7ID
+    # ── From CCS Example ───────────────────────────────────────────────
+    CC2650DK_7ID      # board selection
+    CC2650EM_7ID      # RF package variant — required by ble_user_config.c
     CC26XX
     GAPROLE_TASK_STACK_SIZE=540
     HEAPMGR_SIZE=0
@@ -123,24 +167,6 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     xdc_runtime_Assert_DISABLE_ALL
     xdc_runtime_Log_DISABLE_ALL
 
-    # ── From CCS Example ───────────────────────────────────────────────
-    CC26XXWARE
-    DATA=
-    EXT_HAL_ASSERT
-    FLASH_ROM_BUILD
-    GATT_NO_CLIENT
-    INCLUDE_AES_DECRYPT
-    NEAR_FUNC=
-    OSAL_CBTIMER_NUM_TASKS=1
-    OSAL_SNV=1
-    POWER_SAVING
-    xDEBUG
-    xDEBUG_ENC
-    xDEBUG_GPIO
-    xDEBUG_SW_TRACE
-    xPM_DISABLE_PWRDOWN
-    xTESTMODES
-    xTEST_BLEBOARD
 
     # ── From BLE Host/Controller Build Components ─────────────────────────────
     BROADCASTER_CFG=0x01
@@ -176,12 +202,20 @@ target_compile_options(${PROJECT_NAME} PRIVATE
     --diag_suppress=48
     --diag_suppress=16004
     --display_error_number
+
+    # Grab the ICALL_STACK0_ADDR and other defines from the output file generated from the stack build
+    # WARNING! do not use the alias '@' it does not parse the .opt file correctly, use 'd--cmd_file'
+    "--cmd_file=${CMAKE_CURRENT_LIST_DIR}/../simple_peripheral_stack/build/debug/boundary/compiler_boundary.opt"
 )
 
 # ─── TIRTOS CONFIGURO ──────────────────────────────────────────────────────────
 add_tirtos_config(${PROJECT_NAME} "tirtos/cc2640.cfg")
 
 # ─── Link Options ──────────────────────────────────────────────────────────────
+get_filename_component(BOUNDARY_CMD
+    "${CMAKE_CURRENT_LIST_DIR}/../simple_peripheral_stack/build/debug/boundary/linker_boundary.cmd"
+    REALPATH)
+
 target_link_options(${PROJECT_NAME} PRIVATE
     # Output map file
     "--map_file=${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.map"
@@ -204,7 +238,7 @@ target_link_options(${PROJECT_NAME} PRIVATE
     "--entry_point=startup_entry"
     
     # Contains defines to set ICALL_STACK_0, needs to be from stack build so memory aligns
-    "${CMAKE_CURRENT_LIST_DIR}/../simple_peripheral_stack/build/debug/boundary/linker_boudary.cmd"
+    "${BOUNDARY_CMD}"
     
     # Linker script
     "${SDK_ROOT}/common/cc26xx/ccs/cc26xx_app.cmd"
