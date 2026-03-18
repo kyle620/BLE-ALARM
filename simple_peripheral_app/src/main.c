@@ -204,7 +204,7 @@ int main()
 
   SimpleBLEPeripheral_createTask();
 
-  System_printf("Hello\n");
+  System_printf("Hello VSCODE!\n");
   System_flush();
 
 //  uart_createTask();

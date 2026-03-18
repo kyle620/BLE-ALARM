@@ -425,6 +425,12 @@ static void SimpleBLEPeripheral_init(void)
 {
 
 //    Board_initGPIO();
+    System_printf("SimpleBLE Init!\n");
+    System_flush();
+    GPIO_writeDio(Board_LED0, GPIO_OUTPUT_ENABLE);
+    Task_sleep(2000);
+    GPIO_writeDio(Board_LED0, GPIO_OUTPUT_DISABLE);
+    Task_sleep(2000);
     GPIO_writeDio(Board_LED0, GPIO_OUTPUT_ENABLE);
 
     UART_init();
@@ -484,10 +490,16 @@ static void SimpleBLEPeripheral_init(void)
   Util_constructClock(&periodicClock, SimpleBLEPeripheral_clockHandler,
                       SBP_PERIODIC_EVT_PERIOD, 0, false, SBP_PERIODIC_EVT);
 
-  dispHandle = Display_open(Display_Type_LCD, NULL);
+  System_printf("Here Before Open!\n");
+  System_flush();
+  // dispHandle = Display_open(Display_Type_LCD, NULL);
+  System_printf("Here After Open!\n");
+  System_flush();
 
   // Setup the GAP
   GAP_SetParamValue(TGAP_CONN_PAUSE_PERIPHERAL, DEFAULT_CONN_PAUSE_PERIPHERAL);
+  System_printf("Here After SetParam!\n");
+  System_flush();
 
   // Setup the GAP Peripheral Role Profile
   {
@@ -555,6 +567,8 @@ static void SimpleBLEPeripheral_init(void)
     GAPBondMgr_SetParameter(GAPBOND_IO_CAPABILITIES, sizeof(uint8_t), &ioCap);
     GAPBondMgr_SetParameter(GAPBOND_BONDING_ENABLED, sizeof(uint8_t), &bonding);
   }
+  System_printf("Before AddService!\n");
+  System_flush();
 
    // Initialize GATT attributes
   GGS_AddService(GATT_ALL_SERVICES);           // GAP
@@ -601,6 +615,8 @@ static void SimpleBLEPeripheral_init(void)
   SimpleProfile_RegisterAppCBs(&SimpleBLEPeripheral_simpleProfileCBs);
 #endif //!FEATURE_OAD_ONCHIP
 
+    System_printf("Here 2!\n");
+    System_flush();
   // Start the Device
   VOID GAPRole_StartDevice(&SimpleBLEPeripheral_gapRoleCBs);
 
@@ -643,6 +659,10 @@ static void SimpleBLEPeripheral_taskFxn(UArg a0, UArg a1)
   // Application main loop
   for (;;)
   {
+    System_printf("BLE Task\n");
+    System_flush();
+    Task_sleep(1000);
+    GPIO_toggle(Board_LED0);
     // Waits for a signal to the semaphore associated with the calling thread.
     // Note that the semaphore associated with a thread is signaled when a
     // message is queued to the message receive queue of the thread or when

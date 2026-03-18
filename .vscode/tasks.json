@@ -15,8 +15,9 @@
         },
         {
             "label": "CMake: build stack",
+            "dependsOn":["CMake: configure stack"],
             "type": "shell",
-            "command": "cmake --build --preset stack-debug 2>&1 | tee build/debug/build.log" ,
+            "command": "time cmake --build --preset stack-debug 2>&1 | tee build/debug/build.log" ,
             "options" : {
                 "cwd": "${workspaceFolder}/simple_peripheral_stack"
             },
@@ -39,8 +40,9 @@
         },
         {
             "label": "CMake: build app",
+            "dependsOn":["CMake: configure app"],
             "type": "shell",
-            "command": "cmake --build --preset app-debug 2>&1 | tee build/debug/build.log",
+            "command": "time cmake --build --preset app-debug ninja -v 2>&1 | tee build/debug/build.log",
             "options" : {
                 "cwd": "${workspaceFolder}/simple_peripheral_app"
             },

@@ -3,10 +3,11 @@ set(CMAKE_SYSTEM_NAME Generic)
 set(CMAKE_SYSTEM_PROCESSOR arm)
 
 # ─── Tool Paths ─────────────────────────────────────────────────────────────
-set(TI_CGT_ROOT  "/opt/tools/compiler/ti-cgt-arm_20.2.6.LTS"            CACHE PATH "Path to TI CGT root")
-set(TI_CGT_PATH  "${TI_CGT_ROOT}/bin"                                   CACHE PATH "Path to TI CGT binaries")
-set(XDC_ROOT     "/opt/tools/tirtos/xdctools_3_32_00_06_core"           CACHE PATH "Path to XDCtools")
-set(TIRTOS_ROOT  "/opt/tools/tirtos/tirtos_cc13xx_cc26xx_2_21_01_08"    CACHE PATH "Path to TI-RTOS")
+set(TI_CGT_ROOT  "/opt/tools/compiler/ti-cgt-arm_20.2.6.LTS"                            CACHE PATH "Path to TI CGT root")
+set(TI_CGT_PATH  "${TI_CGT_ROOT}/bin"                                                   CACHE PATH "Path to TI CGT binaries")
+set(XDC_ROOT     "/opt/tools/tirtos/xdctools_3_32_00_06_core"                           CACHE PATH "Path to XDCtools")
+set(TIRTOS_ROOT  "/opt/tools/tirtos/tirtos_cc13xx_cc26xx_2_21_01_08"                    CACHE PATH "Path to TI-RTOS")
+set(BLE_SDK_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../simplelink-ble_sdk_2_02_08_12/src"    CACHE PATH "Path to Simplelink")
 
 # ─── Find Tools ─────────────────────────────────────────────────────────────
 find_program(TI_ARMCL   NAMES armcl armcl.exe   PATHS "${TI_CGT_PATH}" NO_DEFAULT_PATH REQUIRED)
